@@ -1,25 +1,48 @@
 import React, { useState } from "react";
+import axios from "axios";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 export default function AuthPage() {
   const [isSignUp, setIsSignUp] = useState(false);
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const navigate = useNavigate();
 
   const toggleAuthMode = () => {
     setIsSignUp(!isSignUp);
+    setName("");
     setPassword("");
-    setConfirmPassword("");
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (isSignUp && password !== confirmPassword) {
-      alert("Passwords do not match!");
-      return;
+
+    const userData = isSignUp
+      ? { name, email, password }
+      : { email, password };
+
+    try {
+      const url = isSignUp
+        ? "http://localhost:3000/api/user/registeruser"
+        : "http://localhost:3000/api/user/login";
+
+      const { data } = await axios.post(url, userData);
+      toast.success(`${isSignUp ? "Signup" : "Signin"} successful!`);
+
+      console.log("Response data:", data);
+
+      
+        navigate("/chats");
+      
+    } catch (error) {
+      console.error(
+        "Authentication failed:",
+        error.response?.data?.message || error.message
+      );
+      toast.error(error.response?.data?.message || "Authentication failed");
     }
-    console.log({ email, password, isSignUp });
-    // Add additional handling like API calls here
   };
 
   return (
@@ -30,6 +53,22 @@ export default function AuthPage() {
         </h2>
 
         <form className="space-y-4" onSubmit={handleSubmit}>
+          {isSignUp && (
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium mb-1">
+                Name
+              </label>
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full p-2 border border-gray-700 rounded-lg bg-gray-900 focus:ring-2 focus:ring-gray-600"
+                placeholder="Enter your name"
+              />
+            </div>
+          )}
+
           <div>
             <label htmlFor="email" className="block text-sm font-medium mb-1">
               Email
@@ -57,25 +96,6 @@ export default function AuthPage() {
               placeholder="Enter your password"
             />
           </div>
-
-          {isSignUp && (
-            <div>
-              <label
-                htmlFor="confirm-password"
-                className="block text-sm font-medium mb-1"
-              >
-                Confirm Password
-              </label>
-              <input
-                id="confirm-password"
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                className="w-full p-2 border border-gray-700 rounded-lg bg-gray-900 focus:ring-2 focus:ring-gray-600"
-                placeholder="Confirm your password"
-              />
-            </div>
-          )}
 
           <button
             type="submit"
