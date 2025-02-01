@@ -4,7 +4,7 @@ const User = require("../models/user");
 
 
 
-
+//one on one chat
 const accessChat = asyncHandler(async (req, res) => {
   const { userId } = req.body;
 
@@ -51,6 +51,7 @@ const accessChat = asyncHandler(async (req, res) => {
   }
 });
 
+//fetch all chats
 const fetchChats = asyncHandler(async (req, res) => {
   try {
     Chat.find({ users: { $elemMatch: { $eq: req.user._id } } })
@@ -71,7 +72,7 @@ const fetchChats = asyncHandler(async (req, res) => {
   }
 });
 
-
+//To create group chat !!
 const createGroupChat = asyncHandler(async (req, res) => {
   if (!req.body.users || !req.body.name) {
     return res.status(400).send({ message: "Please Fill all the feilds" });
